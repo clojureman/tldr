@@ -45,8 +45,8 @@
                    (f xs body)
                    body)))))
          bindings
-         body))
-        `(do ~@body)))
+         body)
+        `(do ~@body))))
 
   (defmacro function [& xs]
     (let [[hd tl] (split-with (complement sequential?) xs)
