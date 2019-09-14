@@ -49,24 +49,26 @@
                                      [(cons false xs)])))
                            bindings
                            (cons nil bindings))]
-      ((fn f [[[mutual & x] & xs] body]
-         (let [pairs (partition-all 2 x)]
-           (let [lft (map first pairs)
-                 rgt (mapv second pairs)
-                 multiple (< 1 (count pairs))
-                 wrap (if multiple vec first)]
-             (if (seq pairs)
-               (if (and mutual '(next pairs))
-                 `(letfn [~@(map (fn [[k v]] (cons k (function-definition v))) pairs)] ~@body)
-                 `(let [~(wrap lft) ~(if (seq xs)
-                                       (f xs [(wrap rgt)])
-                                       (wrap rgt))]
-                    ~@body))
-               (if (seq xs)
-                 (f xs body)
-                 body)))))
-       bindings
-       body)))
+      (if (seq bindings)
+        ((fn f [[[mutual & x] & xs] body]
+           (let [pairs (partition-all 2 x)]
+             (let [lft (map first pairs)
+                   rgt (mapv second pairs)
+                   multiple (< 1 (count pairs))
+                   wrap (if multiple vec first)]
+               (if (seq pairs)
+                 (if (and mutual '(next pairs))
+                   `(letfn [~@(map (fn [[k v]] (cons k (function-definition v))) pairs)] ~@body)
+                   `(let [~(wrap lft) ~(if (seq xs)
+                                         (f xs [(wrap rgt)])
+                                         (wrap rgt))]
+                      ~@body))
+                 (if (seq xs)
+                   (f xs body)
+                   body)))))
+         bindings
+         body)
+        `(do ~@body))))
   
   (defmacro function [& xs]
     (let [[hd tl] (split-with (complement sequential?) xs)
@@ -76,3 +78,5 @@
       (if (and (< (count hd) 5) (seq body-tl))
         `(compute (~fun ~@hd ~args ~@body-hd) ~@body-tl)
         `(~fun ~@xs)))))
+
+  (compute 23)
