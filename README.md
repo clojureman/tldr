@@ -89,7 +89,7 @@ The above example is equivlent to
 
   A name bound in a `where` block is *only* visible in the code block immediately preceeding it. This is a *good thing*, because
 
-  > The less code you have to read in order to understand any given piece of a program, the better your chances are of succeding. 
+  > The less code you have to read in order to understand any given piece of a program, the better your chances are of succeeding. 
 
 ## But Wait ... There's More
 
@@ -149,12 +149,12 @@ Sometimes we absolutely need local functions to call each other in a criss cross
 (compute
     (f "x")
   where-mutual
-    (function f [s] (if (< 10 (count s))
-                       s
-                       (g (str "-" x)))
+    (function f [x] (if (< 10 (count x))
+                       x
+                       (g (str "-" x))))
     (function g [s] (if (< 10 (count s))
                        s
-                       (f (str "|" x))))
+                       (f (str "|" s)))))
 ```
 You can even go a bit crazy and use anonymous functions in `where-mutual` parts
 ```clojure
@@ -163,10 +163,10 @@ You can even go a bit crazy and use anonymous functions in `where-mutual` parts
   where-mutual
     f #(if (< 10 (count %))
            %
-           (g (str "-" x)))
+           (g (str "-" %)))
     (function g [s] (if (< 10 (count s))
                        s
-                       (f (str "|" x))))
+                       (f (str "|" s)))))
 ```
 
 
