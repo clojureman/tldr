@@ -40,3 +40,7 @@
                          {:name SleepyJoe :grade 0}
                          {:name Droopy    :grade 7}])))))
 
+(deftest mutual-recursion
+  (testing "Mutuallly recursive functions"
+    (is (= 1 1))))
+

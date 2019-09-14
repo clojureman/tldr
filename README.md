@@ -142,7 +142,7 @@ In the label example it would be
         .....)
     format-label (juxt :firstname :lastname :room))
 ```
-### Support for Mutually Recursive Functions
+### Mutually Recursive Functions
 
 Sometimes we absolutely need local functions to call each other in a criss cross pattern. Clojure has `letfn` for this, and we have some sugar for that:
 ```clojure
@@ -152,6 +152,18 @@ Sometimes we absolutely need local functions to call each other in a criss cross
     (function f [s] (if (< 10 (count s))
                        s
                        (g (str "-" x)))
+    (function g [s] (if (< 10 (count s))
+                       s
+                       (f (str "|" x))))
+```
+You can even go a bit crazy and use anonymous functions in `where-mutual` parts
+```clojure
+(compute
+    (f "x")
+  where-mutual
+    f #(if (< 10 (count %))
+           %
+           (g (str "-" x)))
     (function g [s] (if (< 10 (count s))
                        s
                        (f (str "|" x))))
