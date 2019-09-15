@@ -3,6 +3,8 @@
 
 [![Clojars Project](https://img.shields.io/clojars/v/tldr.svg)](https://clojars.org/tldr) Beta
 ```clojure
+(require '[tldr.core :refer :all])
+
 (function -main [] 
 
           (println 'Hello something)
@@ -181,7 +183,8 @@ You can also use higher order functions like `comp` or `juxt` to define
 individual functions that can call each other mutually. 
 ```clojure
 (compute
-         (f {:name "Alfie" :age 21 :occupation "unknown" :address {:street "Main Street" :number 1203}}) 
+         (f {:name "Alfie" :age 21 :occupation "unknown" 
+             :address {:street "Main Street" :number 1203}}) 
  where-mutual
          f (comp println (partial record ""))
          record #(str "RECORD\n"
