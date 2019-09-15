@@ -173,11 +173,32 @@ You can even go a bit crazy and use anonymous functions in a `where-mutual` bloc
     f #(if (< 10 (count %))
            %
            (g (str "-" %)))
-    (function g [s] (if (< 10 (count s))
-                       s
-                       (f (str "|" s)))))
+    g (fn [s] (if (< 10 (count s))
+                   s
+                   (f (str "|" s)))))
 ```
+You can also use higher order functions like `comp` or `juxt` to define
+individual functions that can call each other mutually. 
+```clojure
+(compute
+       (f {:name "Alfie" :age 21 :occupation "unknown" 
+           :address {:street "Main Street" :number 1203}})
+  where-mutual
+       f       (comp println record)
+       record  #(str "BEGIN " (apply str (map field %)) "END; ")
+       (function field
+            "Constructs a string representing the field (which might
+             be a compound field) in some silly legacy format." 
+            [[fieldname value]]
+            (str (name fieldname)
+                 " = "
+                 (if (map? value)
+                   (record value)
+                   (str (pr-str value) "; ")))))
 
+;; The above code results in this being printed to stdout:
+;; BEGIN name = "Alfie"; age = 21; occupation = "unknown"; address = BEGIN street = "Main Street"; number = 1203; END; END;
+```
 
 ## License
 

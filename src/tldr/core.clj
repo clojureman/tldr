@@ -1,16 +1,22 @@
 (ns tldr.core)
-
+  
 (def ^:dynamic *local-function* nil)
-
+  
 (let [delimiters (->> (range 2 101)
                       (map #(symbol (apply str (repeat % \-))))
                       (apply conj #{'where 'where-mutual}))
-      is-function? #(and (list? %) (= 'function (first %)))]
-  
+      is-function? #(and (list? %) (= 'function (first %)))
+      function-name #(second (filter symbol? %))
+      function-definition #(drop-while (complement (some-fn list? vector?)) %)
+      expand-functions (partial
+                        mapcat
+                        #(if (is-function? %)
+                           [(function-name %) (binding [*local-function* true] (macroexpand-1 %))]
+                           [%]))]
+
   (defmacro compute
     [& xs]
-    (let [[body bindings] (split-with (complement delimiters) xs)
-          throw-illegal-arg #(throw (IllegalArgumentException.
+    (let [throw-illegal-arg #(throw (IllegalArgumentException.
                                      (str (apply format
                                                  "%s/%s, line %s column %s: %s."
                                                  *ns*
@@ -19,29 +25,25 @@
                                                               (comp str :column meta))
                                                         &form)
                                                        %)))))
-          function-name #(second (filter symbol? %))
-          function-definition #(drop-while (complement (some-fn list? vector?)) %)
+          [body bindings] (split-with (complement delimiters) xs)
           bindings (partition-by (complement delimiters) bindings)
-          expand-functions (partial
-                            mapcat
-                            #(if (is-function? %)
-                               [(function-name %) (binding [*local-function* true] (macroexpand-1 %))]
-                               [%]))
           bindings (mapcat (fn [xs prevs]
                              (cond (delimiters (first xs))
                                    nil
 
                                    (= (last prevs) 'where-mutual)
-                                   (let [xs (expand-functions xs)]
-                                     (mapv (fn [[nam fdef]]
-                                             (when-not (and
-                                                        (symbol? nam)
-                                                        (sequential? fdef)
-                                                        (#{'clojure.core/fn 'fn 'fn*} (first fdef)))
-                                               (throw-illegal-arg "Each where-mutual binding must be of the form (function <name> ...) or <name> <anonymous-function>")))
-                                           (partition-all 2 xs))
-                                     [(cons true xs)])
-
+                                   (->> (expand-functions xs)
+                                        (partition-all 2)
+                                        (mapcat (fn [[nam fdef]]
+                                                  (when-not (symbol? nam)
+                                                    (throw-illegal-arg "Each where-mutual binding must be of the form (function <name> ...) or <name> <value-that-behaves-as-a-function>"))
+                                                  [nam
+                                                   (if (and (sequential? fdef)
+                                                            (#{'clojure.core/fn 'fn 'fn*} (first fdef)))
+                                                     fdef
+                                                     `#(apply ~fdef %&))]))
+                                        (cons true)
+                                        vector)
                                    :else
                                    (let [xs (expand-functions xs)]
                                      (when (odd? (count xs))
@@ -57,8 +59,11 @@
                    multiple (< 1 (count pairs))
                    wrap (if multiple vec first)]
                (if (seq pairs)
-                 (if (and mutual '(next pairs))
-                   `(letfn [~@(map (fn [[k v]] (cons k (function-definition v))) pairs)] ~@body)
+                 (if (and mutual (next pairs))
+                   (let [lf `(letfn [~@(map (fn [[k v]] (cons k (function-definition v))) pairs)] ~@body)]
+                     (if (seq xs)
+                       (f xs [lf])
+                       lf))
                    `(let [~(wrap lft) ~(if (seq xs)
                                          (f xs [(wrap rgt)])
                                          (wrap rgt))]
@@ -69,7 +74,7 @@
          bindings
          body)
         `(do ~@body))))
-  
+
   (defmacro function [& xs]
     (let [[hd tl] (split-with (complement sequential?) xs)
           [args & body] tl
@@ -78,5 +83,3 @@
       (if (and (< (count hd) 5) (seq body-tl))
         `(compute (~fun ~@hd ~args ~@body-hd) ~@body-tl)
         `(~fun ~@xs)))))
-
-  (compute 23)
