@@ -181,23 +181,37 @@ You can also use higher order functions like `comp` or `juxt` to define
 individual functions that can call each other mutually. 
 ```clojure
 (compute
-       (f {:name "Alfie" :age 21 :occupation "unknown" 
-           :address {:street "Main Street" :number 1203}})
-  where-mutual
-       f       (comp println record)
-       record  #(str "BEGIN " (apply str (map field %)) "END; ")
-       (function field
-            "Constructs a string representing the field (which might
-             be a compound field) in some silly legacy format." 
-            [[fieldname value]]
-            (str (name fieldname)
-                 " = "
-                 (if (map? value)
-                   (record value)
-                   (str (pr-str value) "; ")))))
+         (f {:name "Alfie" :age 21 :occupation "unknown" :address {:street "Main Street" :number 1203}}) 
+ where-mutual
+         f (comp println (partial record ""))
+         record #(str "RECORD\n"
+                      (apply str (map field (repeat (str % "  ")) %2))
+                      % "END;\n")
+         (function field [indent [fieldname value]]
+                   (str indent
+                        (name fieldname)
+                        " = "
+                        (if (map? value)
+                          (record (field-indent indent (name fieldname)) value)
+                          (str (pr-str value) ";\n"))))
+ where
+         (function field-indent [indent fieldname]
+                   (apply str indent
+                          (repeat
+                            (+ 3 (count (name fieldname)))
+                            " "))))
 
 ;; The above code results in this being printed to stdout:
-;; BEGIN name = "Alfie"; age = 21; occupation = "unknown"; address = BEGIN street = "Main Street"; number = 1203; END; END;
+
+RECORD
+  name = "Alfie";
+  age = 21;
+  occupation = "unknown";
+  address = RECORD
+              street = "Main Street";
+              number = 1203;
+            END;
+END;
 ```
 
 ## License
