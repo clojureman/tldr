@@ -1,8 +1,17 @@
 # TL;DR
 > The Essence Comes First 
 
+[![Clojars Project](https://img.shields.io/clojars/v/tldr.svg)](https://clojars.org/tldr) Beta
+```clojure
+(function -main [] 
 
-This library allows a style of coding where the most important ideas are expressed first. 
+          (println 'Hello something)
+          
+          where   
+               something "world!") 
+```
+
+This Clojure library enables a coding style where the most important ideas are expressed first. 
 
 Details come later, and can be read as needed.
 
@@ -156,7 +165,7 @@ Sometimes we absolutely need local functions to call each other in a criss cross
                        s
                        (f (str "|" s)))))
 ```
-You can even go a bit crazy and use anonymous functions in `where-mutual` parts
+You can even go a bit crazy and use anonymous functions in a `where-mutual` block
 ```clojure
 (compute
     (f "x")
