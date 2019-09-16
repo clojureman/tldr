@@ -1,4 +1,4 @@
-(defproject tldr "0.1.0"
+(defproject tldr "0.1.2"
   :description "Top down coding style for Clojure"
   :url "https://github.com/clojureman/tldr"
   :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
