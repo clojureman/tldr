@@ -217,6 +217,21 @@ RECORD
 END;
 ```
 
+## Use in Clojure, ClojureScript, or both
+To use from Clojure you need to require
+```clojure
+[tldr.core :refer :all]
+```
+To use from ClojureScript you need to require
+```clojure
+[tldr.core :refer-macros :all]
+```
+If you want your code to compile in both Clojure and ClojureScript you will have to require
+```clojure
+[tldr.core :refer-macros :all :refer :all]
+```
+
+
 ## License
 
 Copyright © 2019 Mads Olsen
