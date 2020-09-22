@@ -39,7 +39,7 @@ Code can be read like a press release - only the first few lines matter; the res
     students '[{:name Peterson  :grade 8}
                {:name Zeus      :grade 100}
                {:name Zach      :grade 20}
-               {:name SleepyJoe :grade 0}
+               {:name Sleepy    :grade 0}
                {:name Droopy    :grade 7}]
 )
 ```
